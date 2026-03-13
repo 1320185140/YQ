@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💕 小渡和张先生</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            overflow-x: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* 漂浮爱心背景 */
+        .hearts-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .heart {
+            position: absolute;
+            color: #ff6b9d;
+            animation: float 6s infinite ease-in-out;
+            opacity: 0.6;
+            font-size: 20px;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(100vh) scale(0.5);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.6;
+            }
+            90% {
+                opacity: 0.6;
+            }
+            100% {
+                transform: translateY(-100px) scale(1.2);
+                opacity: 0;
+            }
+        }
+
+        /* 主容器 */
+        .container {
+            position: relative;
+            z-index: 10;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* 标题区 */
+        .header {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .title {
+            color: #ff6b9d;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(255, 107, 157, 0.5);
+        }
+
+        .subtitle {
+            color: #fff;
+            font-size: 1.2em;
+            opacity: 0.8;
+        }
+
+        /* 时间线 */
+        .timeline {
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+            padding: 40px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 3px;
+            height: 100%;
+            background: linear-gradient(to bottom, #ff6b9d, #ff8e8e, #ffb6c1);
+        }
+
+        .event {
+            position: relative;
+            margin: 40px 0;
+            width: 50%;
+            padding: 0 30px;
+        }
+
+        .event.left {
+            left: 0;
+            text-align: right;
+        }
+
+        .event.right {
+            left: 50%;
+            text-align: left;
+        }
+
+        .event-content {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+
+        .event-content:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(255, 107, 157, 0.4);
+        }
+
+        .event-date {
+            color: #ff6b9d;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .event-title {
+            color: #fff;
+            font-size: 1.3em;
+            margin-bottom: 15px;
+        }
+
+        .event-text {
+            color: #fff;
+            opacity: 0.9;
+            line-height: 1.8;
+            font-size: 1em;
+        }
+
+        .event-text p {
+            margin: 10px 0;
+        }
+
+        /* 图片画廊 */
+        .photo-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .photo-item {
+            position: relative;
+            aspect-ratio: 1;
+            border-radius: 10px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .photo-item:hover {
+            transform: scale(1.05);
+        }
+
+        .photo-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* 图片灯箱 */
+        .lightbox {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .lightbox.active {
+            display: flex;
+        }
+
+        .lightbox img {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 10px;
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            font-size: 40px;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        /* 时间线上的点 */
+        .event::after {
+            content: '💖';
+            position: absolute;
+            top: 20px;
+            font-size: 24px;
+            animation: heartbeat 1.5s infinite;
+        }
+
+        .event.left::after {
+            right: -12px;
+        }
+
+        .event.right::after {
+            left: -12px;
+        }
+
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            15% { transform: scale(1.15); }
+            30% { transform: scale(1); }
+            45% { transform: scale(1.15); }
+            60% { transform: scale(1); }
+        }
+
+        /* 底部 */
+        .footer {
+            text-align: center;
+            padding: 60px 20px;
+            color: #fff;
+        }
+
+        .footer-text {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+        }
+
+        .footer-heart {
+            font-size: 60px;
+            animation: heartbeat 1.5s infinite;
+        }
+
+        /* 音乐控制 */
+        .music-control {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            font-size: 24px;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s;
+        }
+
+        .music-control:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .timeline::before {
+                left: 20px;
+            }
+
+            .event {
+                width: 100%;
+                padding-left: 50px;
+                padding-right: 20px;
+            }
+
+            .event.left, .event.right {
+                left: 0;
+                text-align: left;
+            }
+
+            .event.left::after, .event.right::after {
+                left: 8px;
+            }
+
+            .title {
+                font-size: 1.8em;
+            }
+
+            .event-title {
+                font-size: 1.1em;
+            }
+
+            .event-text {
+                font-size: 0.95em;
+            }
+
+            .photo-gallery {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 漂浮爱心背景 -->
+    <div class="hearts-bg" id="heartsBg"></div>
+
+    <!-- 音乐控制 -->
+    <button class="music-control" id="musicBtn" title="播放/暂停音乐">🎵</button>
+
+    <!-- 图片灯箱 -->
+    <div class="lightbox" id="lightbox">
+        <span class="lightbox-close" id="lightboxClose">&times;</span>
+        <img id="lightboxImg" src="" alt="放大图片">
+    </div>
+
+    <!-- 主容器 -->
+    <div class="container">
+        <!-- 标题 -->
+        <div class="header">
+            <h1 class="title">💕 小渡和张先生</h1>
+            <p class="subtitle">我们的故事正在进行中……</p>
+        </div>
+
+        <!-- 时间线 -->
+        <div class="timeline">
+            <!-- 第一次约会 -->
+            <div class="event left">
+                <div class="event-content">
+                    <div class="event-date">📅 2026.2.20</div>
+                    <h3 class="event-title">第一次约会</h3>
+                    <div class="event-text">
+                        <p>"你那为人称道的美丽，不及我第一次遇见你。"</p>
+                        <p>"你比我想象中的要可爱漂亮。"</p>
+                        <p>我们一起去看电影，《飞驰人生 3》，真的是一部很好看很热血的电影。</p>
+                        <p>又吃了潮汕菜，桂大叔，是我爱吃还吃不腻的口味。</p>
+                    </div>
+                    <div class="photo-gallery">
+                        <div class="photo-item" onclick="openLightbox('images/image1.png')"><img src="images/image1.png" alt="约会照片 1"></div>
+                        <div class="photo-item" onclick="openLightbox('images/image2.png')"><img src="images/image2.png" alt="约会照片 2"></div>
+                        <div class="photo-item" onclick="openLightbox('images/image3.png')"><img src="images/image3.png" alt="约会照片 3"></div>
+                        <div class="photo-item" onclick="openLightbox('images/image4.png')"><img src="images/image4.png" alt="约会照片 4"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 第二次约会 -->
+            <div class="event right">
+                <div class="event-content">
+                    <div class="event-date">📅 2026.3.1</div>
+                    <h3 class="event-title">第二次约会</h3>
+                    <div class="event-text">
+                        <p>外面下着小雨，我去先生家里待了一天。</p>
+                        <p>第一次和先生出门去超市买菜买水果，我挽着先生的胳膊，先生把伞往我这边斜。</p>
+                        <p>先生正在做我喜欢吃的可乐鸡翅！还有一盘菜花，色香味俱全，真的很好吃诶。</p>
+                        <p>先生会抢着帮我盛粥，我就安心坐着被伺候啦～</p>
+                    </div>
+                    <div class="photo-gallery">
+                        <div class="photo-item" onclick="openLightbox('images/image5.png')"><img src="images/image5.png" alt="约会照片 5"></div>
+                        <div class="photo-item" onclick="openLightbox('images/image6.png')"><img src="images/image6.png" alt="约会照片 6"></div>
+                        <div class="photo-item" onclick="openLightbox('images/image7.png')"><img src="images/image7.png" alt="约会照片 7"></div>
+                        <div class="photo-item" onclick="openLightbox('images/image8.png')"><img src="images/image8.png" alt="约会照片 8"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 第三次约会 -->
+            <div class="event left">
+                <div class="event-content">
+                    <div class="event-date">📅 2026.3.6-8</div>
+                    <h3 class="event-title">第三次约会 · 三天两夜</h3>
+                    <div class="event-text">
+                        <p>这是我们故事里的重头戏！我和先生在一起度过了愉快的三天两夜，时间，真的过得好快啊。</p>
+                        <p>💝 先生给我买了一个银手镯，灯光下，我第一次认识到了什么叫真正的"白银"。</p>
+                        <p>🧵 周五晚上，先生在给我缝睡衣，先生真是个细心、耐心又温柔的男人。</p>
+                        <p>🍳 先生给我炸的馒头片，我很喜欢！好吃🤩</p>
+                        <p>🍐 先生给我熬的梨粥，很好喝，养胃的呢。</p>
+                        <p>🛒 在货拉拉面包车车厢里，先生笑得很开心，我也是。</p>
+                        <p>🎮 金铲铲！启动！喜欢和先生唱爱唱的歌☺️</p>
+                    </div>
+                    <div class="photo-gallery">
+                        <div class="photo-item" onclick="openLightbox('images/image9.png')"><img src="images/image9.png" alt="约会照片 9"></div>
+                        <div class="photo-item" onclick="openLightbox('images/image10.png')"><img src="images/image10.png" alt="约会照片 10"></div>
+                        <div class="photo-item" onclick="openLightbox('images/image11.png')"><img src="images/image11.png" alt="约会照片 11"></div>
+                        <div class="photo-item" onclick="openLightbox('images/image12.png')"><img src="images/image12.png" alt="约会照片 12"></div>
+                        <div class="photo-item" onclick="openLightbox('images/image13.png')"><img src="images/image13.png" alt="约会照片 13"></div>
+                        <div class="photo-item" onclick="openLightbox('images/image14.png')"><img src="images/image14.png" alt="约会照片 14"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 特别礼物 -->
+            <div class="event right">
+                <div class="event-content">
+                    <div class="event-date">🎁 特别的日子</div>
+                    <h3 class="event-title">先生的小惊喜</h3>
+                    <div class="event-text">
+                        <p>先生给我买的小电动车，爱你 (๑˘³˘๑)💗❤️</p>
+                        <p>先生很帅，成熟稳重有魅力。</p>
+                        <p>每时每刻都想和先生贴贴。</p>
+                        <p>在厨房里也贴贴，这样拍感觉我好娇小呀。</p>
+                    </div>
+                    <div class="photo-gallery">
+                        <div class="photo-item" onclick="openLightbox('images/image15.png')"><img src="images/image15.png" alt="约会照片 15"></div>
+                        <div class="photo-item" onclick="openLightbox('images/image16.png')"><img src="images/image16.png" alt="约会照片 16"></div>
+                        <div class="photo-item" onclick="openLightbox('images/image17.png')"><img src="images/image17.png" alt="约会照片 17"></div>
+                        <div class="photo-item" onclick="openLightbox('images/image18.png')"><img src="images/image18.png" alt="约会照片 18"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 更多回忆 -->
+            <div class="event left">
+                <div class="event-content">
+                    <div class="event-date">💕 甜蜜瞬间</div>
+                    <h3 class="event-title">我们的日常</h3>
+                    <div class="event-text">
+                        <p>好有 CP 感的镜头</p>
+                        <p>这样拍会显得菜好香呀</p>
+                        <p>是不是离得太远了呢？那就凑近一点吧！</p>
+                        <p>这样子显得先生脸小小的</p>
+                        <p>喜欢我吗？</p>
+                    </div>
+                    <div class="photo-gallery">
+                        <div class="photo-item" onclick="openLightbox('images/image19.png')"><img src="images/image19.png" alt="约会照片 19"></div>
+                        <div class="photo-item" onclick="openLightbox('images/image20.png')"><img src="images/image20.png" alt="约会照片 20"></div>
+                        <div class="photo-item" onclick="openLightbox('images/image21.png')"><img src="images/image21.png" alt="约会照片 21"></div>
+                        <div class="photo-item" onclick="openLightbox('images/image22.png')"><img src="images/image22.png" alt="约会照片 22"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 未完待续 -->
+            <div class="event right">
+                <div class="event-content">
+                    <div class="event-date">❤️ 未来可期</div>
+                    <h3 class="event-title">未完待续</h3>
+                    <div class="event-text">
+                        <p>我们的故事还在继续……</p>
+                        <p>每一天都是新的篇章</p>
+                        <p>执子之手，与子偕老</p>
+                    </div>
+                    <div class="photo-gallery">
+                        <div class="photo-item" onclick="openLightbox('images/image23.png')"><img src="images/image23.png" alt="约会照片 23"></div>
+                        <div class="photo-item" onclick="openLightbox('images/image24.png')"><img src="images/image24.png" alt="约会照片 24"></div>
+                        <div class="photo-item" onclick="openLightbox('images/image25.png')"><img src="images/image25.png" alt="约会照片 25"></div>
+                        <div class="photo-item" onclick="openLightbox('images/image26.png')"><img src="images/image26.png" alt="约会照片 26"></div>
+                        <div class="photo-item" onclick="openLightbox('images/image27.png')"><img src="images/image27.png" alt="约会照片 27"></div>
+                        <div class="photo-item" onclick="openLightbox('images/image28.png')"><img src="images/image28.png" alt="约会照片 28"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 底部 -->
+        <div class="footer">
+            <p class="footer-text">我们的故事正在进行中……❤️</p>
+            <p class="footer-text" style="font-size: 1.2em; opacity: 0.8;">未完待续</p>
+            <div class="footer-heart">💖</div>
+        </div>
+    </div>
+
+    <!-- 背景音乐 -->
+    <audio id="bgMusic" loop>
+        <source src="https://music.163.com/song/media/outer/url?id=1824045033.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        // 创建漂浮爱心
+        function createHearts() {
+            const heartsBg = document.getElementById('heartsBg');
+            const heartSymbols = ['💖', '💕', '💗', '💓', '💞', '❤️', '🩷'];
+            
+            for (let i = 0; i < 30; i++) {
+                const heart = document.createElement('div');
+                heart.className = 'heart';
+                heart.textContent = heartSymbols[Math.floor(Math.random() * heartSymbols.length)];
+                heart.style.left = Math.random() * 100 + '%';
+                heart.style.animationDelay = Math.random() * 6 + 's';
+                heart.style.animationDuration = (Math.random() * 3 + 4) + 's';
+                heart.style.fontSize = (Math.random() * 20 + 15) + 'px';
+                heartsBg.appendChild(heart);
+            }
+        }
+
+        // 音乐控制
+        let isPlaying = false;
+        const musicBtn = document.getElementById('musicBtn');
+        const bgMusic = document.getElementById('bgMusic');
+
+        musicBtn.addEventListener('click', () => {
+            if (isPlaying) {
+                bgMusic.pause();
+                musicBtn.textContent = '🔇';
+            } else {
+                bgMusic.play().catch(() => {});
+                musicBtn.textContent = '🎵';
+            }
+            isPlaying = !isPlaying;
+        });
+
+        // 灯箱功能
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImg = document.getElementById('lightboxImg');
+        const lightboxClose = document.getElementById('lightboxClose');
+
+        function openLightbox(src) {
+            lightboxImg.src = src;
+            lightbox.classList.add('active');
+        }
+
+        lightboxClose.addEventListener('click', () => {
+            lightbox.classList.remove('active');
+        });
+
+        lightbox.addEventListener('click', (e) => {
+            if (e.target === lightbox) {
+                lightbox.classList.remove('active');
+            }
+        });
+
+        // 初始化
+        window.addEventListener('load', () => {
+            createHearts();
+        });
+    </script>
+</body>
+</html>
